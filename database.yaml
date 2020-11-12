@@ -27,9 +27,6 @@ Parameters:
     MaxLength: 64
     AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
     ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
-  WebServerSecurityGroup:
-    Description: The EC2 security group that contains instances that need access to the database
-    Type: AWS::EC2::SecurityGroup::GroupName
 #Mappings: 
 #sarebbero da mettere: instance 
 #- DBInstanceClass
@@ -38,6 +35,19 @@ Parameters:
 #cfr: https://s3.us-west-2.amazonaws.com/cloudformation-templates-us-west-2/RDS_MySQL_With_Read_Replica.template
 
 Resources: 
+  WebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Open for web access
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        CidrIp: 0.0.0.0/0
   DBEC2SecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -55,7 +65,7 @@ Resources:
         Ref: DBName
       Engine: MySQL
       #EngineVersion:
-      #DBSubnetGroupName: QUESTO SOPRATTUTTO NON MI TORNA... NON DEVO SPECIFICARLO?!?!
+      #DBSubnetGroupName: QUESTO SOPRATTUTTO NON MI TORNA... NON DEVO SPECIFICARLO?!?! ALTRIMENTI USA IL DEFAULT!
       MultiAZ: false
       MasterUsername:
         Ref: DBUser
@@ -73,5 +83,68 @@ Resources:
       Tags:
         - Key: keyname
           Value: value
-
+  sampleApplication:
+    Type: AWS::ElasticBeanstalk::Application
+    Properties:
+      Description: AWS Elastic Beanstalk Sample Application
+  sampleApplicationVersion:
+    Type: AWS::ElasticBeanstalk::ApplicationVersion
+    Properties:
+      ApplicationName:
+        Ref: sampleApplication
+      Description: AWS ElasticBeanstalk Sample Application Version
+      SourceBundle:
+        S3Bucket: !Sub "elasticbeanstalk-samples-${AWS::Region}"
+        S3Key: php-newsample-app.zip
+  sampleConfigurationTemplate:
+    Type: AWS::ElasticBeanstalk::ConfigurationTemplate
+    Properties:
+      ApplicationName:
+        Ref: sampleApplication
+      Description: AWS ElasticBeanstalk Sample Configuration Template
+      OptionSettings:
+      - Namespace: aws:autoscaling:asg
+        OptionName: MinSize
+        Value: '2'
+      - Namespace: aws:autoscaling:asg
+        OptionName: MaxSize
+        Value: '6'
+      - Namespace: aws:elasticbeanstalk:environment
+        OptionName: EnvironmentType
+        Value: LoadBalanced
+      - Namespace: aws:autoscaling:launchconfiguration
+        OptionName: IamInstanceProfile
+        Value: aws-elasticbeanstalk-ec2-role
+      - Namespace: aws:elasticbeanstalk:environment
+        OptionName: ServiceRole
+        Value: aws-elasticbeanstalk-service-role
+      - Namespace: aws:elasticbeanstalk:application:environment
+        OptionName: RDS_DB_NAME
+        Value:
+          Ref DBName
+      - Namespace: aws:elasticbeanstalk:application:environment
+        OptionName: RDS_HOSTNAME
+        Value: !GetAtt DBInstance.Endpoint.Address
+      - Namespace: aws:elasticbeanstalk:application:environment
+        OptionName: RDS_PORT
+        Value: '3306'
+      - Namespace: aws:elasticbeanstalk:application:environment
+        OptionName: RDS_USERNAME
+        Value:
+          Ref DBUser
+      - Namespace: aws:elasticbeanstalk:application:environment
+        OptionName: RDS_PASSWORD
+        Value:
+          Ref DBPassword
+      SolutionStackName: 64bit Amazon Linux 2018.03 v2.9.12 running PHP 7.3
+  sampleEnvironment:
+    Type: AWS::ElasticBeanstalk::Environment
+    Properties:
+      ApplicationName:
+        Ref: sampleApplication
+      Description: AWS ElasticBeanstalk Sample Environment
+      TemplateName:
+        Ref: sampleConfigurationTemplate
+      VersionLabel:
+        Ref: sampleApplicationVersion
 #Outputs:
