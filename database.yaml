@@ -40,15 +40,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Open for web access
-      SecurityGroupIngress:
-      - IpProtocol: tcp
-        FromPort: 80
-        ToPort: 80
-        CidrIp: 0.0.0.0/0
-      - IpProtocol: tcp
-        FromPort: 443
-        ToPort: 443
-        CidrIp: 0.0.0.0/0
+      # Lo usiamo come markup e basta
   DBEC2SecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -106,7 +98,7 @@ Resources:
       OptionSettings:
       - Namespace: aws:autoscaling:asg
         OptionName: MinSize
-        Value: '2'
+        Value: '1'
       - Namespace: aws:autoscaling:asg
         OptionName: MaxSize
         Value: '6'
@@ -115,9 +107,17 @@ Resources:
         Value: LoadBalanced
       - Namespace: aws:autoscaling:launchconfiguration
         OptionName: IamInstanceProfile
+        #Questo è il ruolo che viene dato alle istanze
+        #Come policies ha queste 3: AWSElasticBeanstalkWebTier, AWSElasticBeanstalkMulticontainerDocker, AWSElasticBeanstalkWorkerTier
         Value: aws-elasticbeanstalk-ec2-role
+      - Namespace: aws:autoscaling:launchconfiguration
+        OptionName: SecurityGroups
+        #Questo è un securitygroup che viene aggiunto alle istanze, oltre a quello che permette la comunicazione su porta 80 da Load Balancer, creato automaticamente
+        Value: 
+          Ref: WebServerSecurityGroup      
       - Namespace: aws:elasticbeanstalk:environment
         OptionName: ServiceRole
+        #The name of an IAM role that Elastic Beanstalk uses to manage resources for the environment.
         Value: aws-elasticbeanstalk-service-role
       - Namespace: aws:elasticbeanstalk:application:environment
         OptionName: RDS_DB_NAME
@@ -154,3 +154,5 @@ Resources:
 #Non funziona perchè devo associare il security group sulle macchine create da autoscaling group nel launch configuration...
 #Vedere se questo può aiutare
 #https://stackoverflow.com/questions/40671054/how-do-i-specify-a-security-group-for-elastic-beanstalk-launch-configuration-in
+
+#C'è da creare anche VPC dedicata, con tutte le risorse che ne conseguono, con DB nella parte priivata e NAAT GAteway per le istanze...
