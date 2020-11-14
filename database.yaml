@@ -35,6 +35,7 @@ Parameters:
 #cfr: https://s3.us-west-2.amazonaws.com/cloudformation-templates-us-west-2/RDS_MySQL_With_Read_Replica.template
 
 Resources: 
+  #in realtà però il security gruoup delle istanze con la porta 80 aperta sul LoadBalancer viene 
   WebServerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -148,3 +149,8 @@ Resources:
       VersionLabel:
         Ref: sampleApplicationVersion
 #Outputs:
+
+
+#Non funziona perchè devo associare il security group sulle macchine create da autoscaling group nel launch configuration...
+#Vedere se questo può aiutare
+#https://stackoverflow.com/questions/40671054/how-do-i-specify-a-security-group-for-elastic-beanstalk-launch-configuration-in
