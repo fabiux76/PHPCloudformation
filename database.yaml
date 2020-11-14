@@ -121,7 +121,7 @@ Resources:
       - Namespace: aws:elasticbeanstalk:application:environment
         OptionName: RDS_DB_NAME
         Value:
-          Ref DBName
+          Ref: DBName
       - Namespace: aws:elasticbeanstalk:application:environment
         OptionName: RDS_HOSTNAME
         Value: !GetAtt DBInstance.Endpoint.Address
@@ -131,11 +131,11 @@ Resources:
       - Namespace: aws:elasticbeanstalk:application:environment
         OptionName: RDS_USERNAME
         Value:
-          Ref DBUser
+          Ref: DBUser
       - Namespace: aws:elasticbeanstalk:application:environment
         OptionName: RDS_PASSWORD
         Value:
-          Ref DBPassword
+          Ref: DBPassword
       SolutionStackName: 64bit Amazon Linux 2018.03 v2.9.12 running PHP 7.3
   sampleEnvironment:
     Type: AWS::ElasticBeanstalk::Environment
