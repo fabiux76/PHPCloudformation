@@ -156,3 +156,18 @@ Resources:
 #https://stackoverflow.com/questions/40671054/how-do-i-specify-a-security-group-for-elastic-beanstalk-launch-configuration-in
 
 #C'è da creare anche VPC dedicata, con tutte le risorse che ne conseguono, con DB nella parte priivata e NAAT GAteway per le istanze...
+#Next Steps:
+#- Le istanze EC2 devono essere nella public o private subnets (se servite da Load balancer?)
+#- Definire mappa per prendere parametri diversi tra PROD e DEV (es max autoscaling, dimensione del DB e repliche del DB)
+#- Creare anche l'infrastruttura VPC (e tutte i componenti inerenti... Iternet Gateway, NAT Gateway, ....
+#- According to best practices, separare queste definizioni.... ed organizzarle (rivedere come nei corsi)
+#- Fare in modo che l'applicazione acceda ad S3 e quindi fare in modo di dargli ruolo che permetta questo (probabilmente il aws-elasticbeanstalk-ec2-role lo fa già, ma magari provare per test a dargli qualcosa di più restrittivo?)
+#   quindi questo probabilmente implica definire il Rolo, la\e Policy e l'InstanceProfile (oppure verificare se si può direttamente associare il ruole)
+#- Fare in  modo che le istanze EC2 siano accessibili via SSH (o direttamente o attraversio Bstion Host) prendendo come parametro di input del template la chiave KeyPair:KeyName
+#- Provare ad usare Linux2 come piattaforma e vedere limitazioni, cose in più che bisogna fare
+#- Valutare il meccanismo delle saved configurations, che è utile, perchè potrei configurare ambienti da console e poi
+#   salvare la configurazione e estrarre le informazioni nel cloudformation
+#   cfr: https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/environment-configuration-savedconfig.html
+#- Cloudformation BP: use dedicated service role
+#- Provare Cloudformation CLI e parameters files
+#- Import cross-stack resources 
